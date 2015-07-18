@@ -1,12 +1,8 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 # use http: instead of https:
 download.file(url = "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "activity.zip", method = "auto")
 unzip("activity.zip")
@@ -16,13 +12,15 @@ data$date <- as.POSIXct(data$date)
 
 ## What is the mean total number of steps taken per day?
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 library(ggplot2)
 library(lubridate)
 ```
 
-```{r}
+
+```r
 no_NA <- filter(data, steps != "NA") # data_no_NA <- data[complete.cases(data),]
 
 by_date <- group_by(no_NA, date)
@@ -34,17 +32,30 @@ bin_steps <- seq(from = 0, to = 25000, by = 2500)
 hist(total_steps$total.steps, breaks = bin_steps,
      main = paste("Histogram of Total Steps Per Day"),
      xlab = "Total Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
 mean(total_steps$total.steps)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 median(total_steps$total.steps)
+```
 
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
 
-```{r}
 
+```r
 interval <- group_by(no_NA, interval)
 
 interval_avg <- summarise(interval, avg.steps = mean(steps))
@@ -52,18 +63,35 @@ interval_avg <- summarise(interval, avg.steps = mean(steps))
 plot(interval_avg$interval, interval_avg$avg.steps, type="l",
      xlab = "5 Minute Interval",
      ylab = "Average Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+```r
 max_steps <- filter(interval_avg, avg.steps == max(avg.steps))
 
 max_steps # The interval with the maximum average steps per day.
-      
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval avg.steps
+## 1      835  206.1698
 ```
 
 ## Imputing missing values
 
-```{r}
-nrow(data) - nrow(no_NA) # Number of NAs.
 
+```r
+nrow(data) - nrow(no_NA) # Number of NAs.
+```
+
+```
+## [1] 2304
+```
+
+```r
 mean_steps <- summarise(by_date, avg.steps = mean(steps))
 
 avg_day <- mean(mean_steps$avg.steps) # used to replace NA's that span entire days.
@@ -96,11 +124,24 @@ bin_steps <- seq(from = 0, to = 25000, by = 2500)
 hist(total_steps2$total.steps, breaks = bin_steps,
      main = paste("Histogram of Total Steps Per Day NA Imputed"),
      xlab = "Total Steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
+```r
 mean(total_steps2$total.steps)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 median(total_steps2$total.steps)
+```
 
+```
+## [1] 10766.19
 ```
 The mean values don't differ because the NA values were for periods of a whole day and the mean for a day was substituted for the NA value.  
 
@@ -111,7 +152,8 @@ The frequency of total steps near the mean  of the distribution increased.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 dayofweek <- mutate(joined, dayofweek = wday(date))
 
 week <- mutate(dayofweek, weekend = ifelse(dayofweek == 1 | dayofweek == 7, 1, 2))
@@ -128,3 +170,5 @@ p <- p + facet_grid(weekend2~.)
 p <- p + ylab("Mean Number of Steps Per Interval")
 p
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
